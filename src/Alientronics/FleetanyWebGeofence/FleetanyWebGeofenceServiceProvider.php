@@ -16,14 +16,28 @@ class FleetanyWebGeofenceServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        // Views
-        $this->loadViewsFrom(__DIR__ . '/../../views', 'fleetany-web-geofence');
-
-        // Routes
-        include __DIR__.'/../../routes.php';
-        
-        // Translations
-        $this->loadTranslationsFrom(__DIR__ . '/../../translations', 'fleetany-web-geofence');
+		$this->publishViews();
+        $this->publishTranslations();
+    }
+	
+	/**
+     * Publish the views files to the application views directory
+     */
+    public function publishViews()
+    {
+        $this->publishes([
+            __DIR__ . '/../../views/' => base_path('/resources/views'),
+        ], 'translations');
+    }
+	
+	/**
+     * Publish the translations files to the application translations directory
+     */
+    public function publishTranslations()
+    {
+        $this->publishes([
+            __DIR__ . '/../../translations/' => base_path('/resources/lang'),
+        ], 'translations');
     }
 
     /**
