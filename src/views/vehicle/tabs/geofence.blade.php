@@ -1,20 +1,3 @@
-    <style>
-      #map {
-        height: 100%;
-      }
-      #slider {
-        width: 50%;
-      }
-    </style>
-    	
-    <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
-    <script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
-    <script>
-      $(function() {
-        $( "#slider" ).slider();
-      });
-    </script>
-
     <div class="mdl-textfield mdl-js-textfield is-upgraded is-focused mdl-textfield--floating-label @if ($errors->has('geofence_name')) is-invalid is-dirty @endif"" data-upgraded="eP">
     	{!!Form::text('geofence_name', $vehicle->geofence['notification']['text'], ['class' => 'mdl-textfield__input'])!!}
     	{!!Form::label('geofence_name', Lang::get('geofence.Name'), ['class' => 'mdl-color-text--primary-contrast mdl-textfield__label is-dirty'])!!}
@@ -22,8 +5,8 @@
     </div>     
     
     <div class="mdl-textfield mdl-js-textfield is-upgraded is-focused mdl-textfield--floating-label @if ($errors->has('geofence_radius')) is-invalid is-dirty @endif"" data-upgraded="eP">
- <!--     	<input id="radius" class="mdl-slider mdl-js-slider" type="range" id="s1" min="0" max="10000" value="0"> -->
 	   	{!!Form::number('geofence_radius', $vehicle->geofence['radius'], ['id' => 'geofence_radius', 'class' => 'mdl-textfield__input'])!!}
+		<input class="mdl-slider mdl-js-slider" type="range" id="geofence_slider" min="0" max="100000" value="0">
     	{!!Form::label('geofence_radius', Lang::get('geofence.Radius'), ['class' => 'mdl-color-text--primary-contrast mdl-textfield__label is-dirty'])!!}
     	<span class="mdl-textfield__error">{{ $errors->first('geofence_radius') }}</span>
     </div>  
@@ -34,16 +17,24 @@
     <div class="mdl-grid demo-content">
         <div class="mdl-cell mdl-cell--12-col mdl-grid">
         	<div class="mdl-data-table mdl-js-data-table mdl-cell--12-col mdl-shadow--2dp">
-    
-        	<div id="slider"></div>
-            <div id="map"></div>
-    
+            	<div id="map"></div>
             </div>
         </div>
     </div>
 
-
+    <div class="mdl-card__actions">
+    	<button type="submit" class="mdl-button mdl-color--primary mdl-color-text--accent-contrast mdl-js-button mdl-button--raised mdl-button--colored">
+          {{ Lang::get('general.Send') }} 
+        </button>
+    </div>
+    
+    
+    
 <script>
+
+@if(!empty($vehicle->geofence['radius']))
+$('#geofence_slider').val({{$vehicle->geofence['radius']}});
+@endif
 
 function initMap() {
 	@if(empty($vehicle->geofence['latitude']))
@@ -89,13 +80,20 @@ function initMap() {
 		drawCircle();
 	@endif
 
-	$('#slider').slider({
-        slide: function(event, ui) {
-        	$("#geofence_radius").parent().addClass('is-dirty');
-			$("#geofence_radius").val(ui.value * 1000);
+	$('#geofence_slider').on('propertychange input', function (e) {
+	    var valueChanged = false;
+
+	    if (e.type=='propertychange') {
+	        valueChanged = e.originalEvent.propertyName=='value';
+	    } else {
+	        valueChanged = true;
+	    }
+	    if (valueChanged) {
+	    	$("#geofence_radius").parent().addClass('is-dirty');
+			$("#geofence_radius").val($(this).val());
 			drawCircle();
-        }
-    });
+	    }
+	});
 	
 	marker.addListener('dragend', function() {
 	   $("#geofence_latitude").val(marker.getPosition().lat());
@@ -118,15 +116,8 @@ function initMap() {
 		  radius: parseInt($("#geofence_radius").val())
 		});
 	}
-
 }
 </script>
 <script src="https://maps.googleapis.com/maps/api/js?key={{config('app.google_maps_api_key')}}&signed_in=true&libraries=drawing&callback=initMap"
      async defer></script>
-
-     
-    <div class="mdl-card__actions">
-    	<button type="submit" class="mdl-button mdl-color--primary mdl-color-text--accent-contrast mdl-js-button mdl-button--raised mdl-button--colored">
-          {{ Lang::get('general.Send') }} 
-        </button>
-    </div>
+    
